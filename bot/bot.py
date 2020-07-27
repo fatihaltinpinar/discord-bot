@@ -26,6 +26,11 @@ async def test(ctx, *, question):
 
 @client.command()
 @commands.is_owner()
+async def invite_link(ctx):
+    await ctx.message.author.send(("Invite Link: " + config.INVITE_LINK))
+
+@client.command()
+@commands.is_owner()
 async def reload(ctx):
     await ctx.send(f"Reloading...")
 
