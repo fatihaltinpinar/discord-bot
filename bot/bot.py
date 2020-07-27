@@ -3,8 +3,9 @@ from discord.ext import commands
 from discord.utils import get
 import config
 import urllib.request
+from bot.database import Database
+import re
 
-print('Starting up')
 client = commands.Bot(command_prefix = config.PREFIX)
 
 @client.event
@@ -61,10 +62,19 @@ async def play(ctx, url):
 @client.event
 async def on_message(message):
     # Groovy id
-    if (message.author.id == config.MUSIC_BOT_ID):
-        print(message.embeds[0].description)
-
+    if (message.author.id == config.MUSIC_BOT_ID and message.embeds[0].title == "Now playing"):
+        description = message.embeds[0].description
+        print("Adding: ", description)
+        video_title = re.search("\[(.*?)\]", description).group(1)
+        video_link = re.search("\((http[s]?://(.*?))\)", description).group(1)
+        member_id = re.search("\[<@(.*)>\]", description).group(1)
+        guild_id = message.guild.id
+        db.add_play_request(video_title, video_link, member_id, guild_id)
     await client.process_commands(message)
 
 
+
+print('Starting up')
+db = Database(config.DBFILE)
+db.create_tables()
 client.run(config.TOKEN)
