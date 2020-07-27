@@ -5,6 +5,7 @@ import config
 import urllib.request
 from bot.database import Database
 import re
+import csv
 
 client = commands.Bot(command_prefix = config.PREFIX)
 
@@ -77,6 +78,22 @@ async def on_message(message):
         db.add_play_request(video_title, video_link, member_id, guild_id)
     await client.process_commands(message)
 
+
+@client.command()
+async def list(ctx):
+    # member_ids = db.get_member_ids(ctx.guild.id)
+    # member_names = {}
+    # for id in member_ids:
+    #     member_names[id] = client.get_user(id).name
+    request_list = db.get_request_list(ctx.guild.id)
+
+    with open('temp.csv', 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(("Video Title", "Video URL","Play Count"))
+        writer.writerows(request_list)
+
+    with open('temp.csv', 'r', newline='', encoding='utf-8') as file:
+        await ctx.send(file=(discord.File(file, filename="request_list.csv")))
 
 
 print('Starting up')
