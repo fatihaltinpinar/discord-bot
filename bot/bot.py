@@ -135,7 +135,7 @@ async def on_member_update(before, after):
                     embed = discord.Embed(title=choice(config.LOSS_MESSAGE),
                                           url=f"https://www.opendota.com/matches/{match['match_id']}",
                                           description=choice(config.LOSS_DESCRIPTIONS))
-                print("Sending: ", match['match_id'])
+                print("Sending Match Info:", match['match_id'])
                 await channel.send(embed=embed)
             last_match = recent_matches[0]['match_id']
             db.set_last_match(config.OWNER_STEAM_ID, last_match)
