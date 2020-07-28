@@ -6,7 +6,11 @@ import urllib.request
 from bot.database import Database
 import re
 import csv
+import requests
+from random import choice
+from asyncio import Lock
 
+lock = Lock()
 client = commands.Bot(command_prefix = config.PREFIX)
 
 @client.event
@@ -21,9 +25,6 @@ async def ping(ctx):
 async def about(ctx):
     await ctx.send(config.ABOUT)
 
-@client.command()
-async def test(ctx, *, question):
-    await ctx.send(f"question = {question}")
 
 @client.command()
 @commands.is_owner()
@@ -95,6 +96,49 @@ async def list(ctx):
     with open('temp.csv', 'r', newline='', encoding='utf-8') as file:
         await ctx.send(file=(discord.File(file, filename="request_list.csv")))
 
+@client.event
+async def on_member_update(before, after):
+    if before.id != config.OWNER_ID:
+        return
+    if before.activity is None or before.activity.application_id != config.DOTA_APP_ID:
+        return
+    if before.activity.application_id == config.DOTA_APP_ID and after.activity is None:
+        async with lock:
+            print("Sending recent matches!")
+            channel = client.get_channel(config.DOTA_STATUS_CHANNEL_ID)
+            headers = {"api_key" : config.OPENDOTA_KEY}
+            r = requests.post(f"https://api.opendota.com/api/players/{config.OWNER_STEAM_ID}/refresh", headers=headers)
+
+            r = requests.get(f"https://api.opendota.com/api/players/{config.OWNER_STEAM_ID}/recentMatches", headers=headers)
+            recent_matches = r.json()
+            last_match = db.get_last_match(config.OWNER_STEAM_ID)
+            nonprinted_matches = []
+            for match in recent_matches:
+                match_id = match['match_id']
+                if match_id <= last_match:
+                    break
+                if match['lobby_type'] == 7:
+                    nonprinted_matches.append(match)
+
+            if len(nonprinted_matches) == 0:
+                print("No matches to send!")
+                return
+
+            for i in range(len(nonprinted_matches)):
+                match = nonprinted_matches.pop()
+                if ((match['player_slot'] < 128 and match['radiant_win']) or
+                        (match['player_slot'] >= 128 and not match['radiant_win'])):
+                    embed = discord.Embed(title=choice(config.WIN_MESSAGE),
+                                          url=f"https://www.opendota.com/matches/{match['match_id']}",
+                                          description=choice(config.WIN_DESCRIPTIONS))
+                else:
+                    embed = discord.Embed(title=choice(config.LOSS_MESSAGE),
+                                          url=f"https://www.opendota.com/matches/{match['match_id']}",
+                                          description=choice(config.LOSS_DESCRIPTIONS))
+                print("Sending: ", match['match_id'])
+                await channel.send(embed=embed)
+            last_match = recent_matches[0]['match_id']
+            db.set_last_match(config.OWNER_STEAM_ID, last_match)
 
 print('Starting up')
 db = Database(config.DBFILE)

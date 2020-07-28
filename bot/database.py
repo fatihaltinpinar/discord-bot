@@ -1,4 +1,5 @@
 import sqlite3
+import config
 
 class Database:
     db_file = ""
@@ -15,7 +16,14 @@ class Database:
             member_id       int,
             guild_id        int,
             datetime timestamp not null default current_timestamp);"""
+            query2 = """
+            create table if not exists last_match(
+            steam_id       integer primary key,
+            match_id        integer             
+            );
+            """
             conn.execute(query)
+            conn.execute(query2)
 
     def add_play_request(self, video_title, video_link, member_id, guild_id):
         with sqlite3.connect(self.db_file) as conn:
@@ -49,7 +57,31 @@ class Database:
             request_list = cursor.fetchall()
         return request_list
 
+    def get_last_match(self, steam_id):
+        match_id = 0
+        with sqlite3.connect(self.db_file) as conn:
+            query = """
+            select match_id from last_match where steam_id == ?;
+            """
+            cursor = conn.execute(query, (steam_id,))
+            match_id = cursor.fetchone()
+        return match_id[0]
+
+    def set_last_match(self, steam_id, match_id):
+        with sqlite3.connect(self.db_file) as conn:
+            query = """update last_match set match_id = ? where steam_id == ?;"""
+            cursor = conn.execute(query, (match_id, steam_id))
+            if cursor.rowcount == 0:
+                query = """insert into last_match values (?, ?);"""
+                cursor = conn.execute(query, (steam_id, match_id))
+
+
+
+
 if __name__ == '__main__':
     db = Database('data.db')
     db.create_tables()
-    db.add_play_request("deneme", "https://www.youtube.com/watch?v=ai05A1l1t-I", 13130)
+    print("HELLO")
+    print(db.get_last_match(config.OWNER_STEAM_ID))
+    print(db.set_last_match(config.OWNER_STEAM_ID, 5537383867))
+    print(db.get_last_match(config.OWNER_STEAM_ID))
