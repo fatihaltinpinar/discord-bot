@@ -81,7 +81,7 @@ async def on_message(message):
 
 
 @client.command()
-async def list(ctx):
+async def requests(ctx):
     # member_ids = db.get_member_ids(ctx.guild.id)
     # member_names = {}
     # for id in member_ids:
@@ -90,8 +90,12 @@ async def list(ctx):
 
     with open('temp.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow(("Video Title", "Video URL","Play Count"))
-        writer.writerows(request_list)
+        writer.writerow(("Video Title", "Video URL","Play Count","Played Most By"))
+        for request in request_list:
+            tmp = list(request)
+            user = client.get_user(tmp[3])
+            tmp[3] = user.name
+            writer.writerow(tmp)
 
     with open('temp.csv', 'r', newline='', encoding='utf-8') as file:
         await ctx.send(file=(discord.File(file, filename="request_list.csv")))
@@ -107,8 +111,7 @@ async def on_member_update(before, after):
             print("Sending recent matches!")
             channel = client.get_channel(config.DOTA_STATUS_CHANNEL_ID)
             headers = {"api_key" : config.OPENDOTA_KEY}
-            r = requests.post(f"https://api.opendota.com/api/players/{config.OWNER_STEAM_ID}/refresh", headers=headers)
-
+            requests.post(f"https://api.opendota.com/api/players/{config.OWNER_STEAM_ID}/refresh", headers=headers)
             r = requests.get(f"https://api.opendota.com/api/players/{config.OWNER_STEAM_ID}/recentMatches", headers=headers)
             recent_matches = r.json()
             last_match = db.get_last_match(config.OWNER_STEAM_ID)

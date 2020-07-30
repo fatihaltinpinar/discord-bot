@@ -46,12 +46,20 @@ class Database:
     def get_request_list(self, guild_id):
         request_list = []
         with sqlite3.connect(self.db_file) as conn:
+            # query = """
+            # select video_title, video_link, count(id)
+            # from play_requests
+            # where guild_id == ?
+            # group by video_link
+            # order by 3 desc;
+            # """
             query = """
-            select video_title, video_link, count(id)
-            from play_requests
-            where guild_id == ? 
-            group by video_link 
-            order by 3 desc;
+            select video_title, video_link, SUM(request_per_member) as total_requests, member_id from
+                (select video_title, video_link, count(*) as request_per_member, member_id from play_requests
+                where guild_id = ?
+                group by video_link, member_id
+                order by video_title, count(*) desc)
+            group by video_title
             """
             cursor = conn.execute(query, (guild_id,))
             request_list = cursor.fetchall()
