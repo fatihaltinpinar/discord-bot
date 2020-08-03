@@ -83,7 +83,7 @@ async def on_message(message):
 
 @client.command()
 @commands.is_owner()
-async def requests(ctx):
+async def list_requests(ctx):
     # member_ids = db.get_member_ids(ctx.guild.id)
     # member_names = {}
     # for id in member_ids:
