@@ -92,7 +92,7 @@ async def requests(ctx):
 
     with open('temp.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow(("Video Title", "Video URL","Play Count","Played Most By"))
+        writer.writerow(("Video Title", "Video URL","Play Count","Played Mostly By"))
         for request in request_list:
             tmp = list(request)
             user = client.get_user(tmp[3])
