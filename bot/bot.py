@@ -7,6 +7,7 @@ from bot.database import Database
 import re
 import csv
 import requests
+from datetime import datetime
 from random import choice
 from asyncio import Lock
 
@@ -81,6 +82,7 @@ async def on_message(message):
 
 
 @client.command()
+@commands.is_owner()
 async def requests(ctx):
     # member_ids = db.get_member_ids(ctx.guild.id)
     # member_names = {}
@@ -98,7 +100,7 @@ async def requests(ctx):
             writer.writerow(tmp)
 
     with open('temp.csv', 'r', newline='', encoding='utf-8') as file:
-        await ctx.send(file=(discord.File(file, filename="request_list.csv")))
+        await ctx.message.author.send(file=(discord.File(file, filename=f"{datetime.now().strftime('%Y%m%d%H%M%S')}.csv")))
 
 @client.event
 async def on_member_update(before, after):
