@@ -60,6 +60,7 @@ class Database:
                 group by video_link, member_id
                 order by video_title, count(*) desc)
             group by video_title
+            order by total_requests desc
             """
             cursor = conn.execute(query, (guild_id,))
             request_list = cursor.fetchall()
