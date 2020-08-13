@@ -86,6 +86,14 @@ class Database:
 
 
 
+    def get_top10_by_member_id(self, member_id):
+        request_list = []
+        with sqlite3.connect(self.db_file) as conn:
+            query = """SELECT video_title, count(*) FROM play_requests 
+            where member_id = ? GROUP by video_link ORDER by 2 desc LIMIT 10"""
+            cursor = conn.execute(query, (member_id,))
+            request_list = cursor.fetchall()
+        return request_list
 
 if __name__ == '__main__':
     db = Database('data.db')

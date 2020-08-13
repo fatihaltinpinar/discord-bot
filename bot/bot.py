@@ -151,16 +151,53 @@ async def top10(ctx):
     message = ctx.message.content
     target_id = re.search('<@!([0-9].+)>', message)
     if target_id:
-        print('anan')
+        user_id = int(target_id.group(1))
+        username = client.get_user(user_id).name
+        request_list = db.get_top10_by_member_id(user_id)
+        if len(request_list) == 0:
+            await ctx.send(f"{username} did not played any songs yet")
+            return
+        message = top10print_byuser(request_list, username)
+        await ctx.send(message)
+    else:
+        request_list = db.get_request_list(ctx.guild.id)
+        if len(request_list) == 0:
+            await ctx.send("This server have not played any songs yet WOAW!")
+            return
+        message = top10print(request_list)
+        await ctx.send(message)
 
-    pass
 
-def top10print(request_list, username):
+
+def top10print(request_list):
     message = f"""```nim
-    'TOP 10 TRACKS PLAYED BY {username}\n'"""
+    \t\tTOP 10 TRACKS PLAYED BY IN SERVER\n"""
     line_count = 1
     for x in request_list:
-        message += f"{line_count}) {request_list}"
+        if line_count == 11:
+            return message + "```"
+        tmp = list(x)
+        title = tmp[0]
+        count = tmp[2]
+        username = client.get_user(tmp[3]).name
+        message += f'\n\"{line_count}) {title[:config.TITLE_PADDING].ljust(config.TITLE_PADDING)} \t {count} \t {username}\"'
+        line_count += 1
+    return message + "```"
+
+def top10print_byuser(request_list, username):
+    message = f"""```nim
+    \t\tTOP 10 TRACKS PLAYED BY {username}\n"""
+    line_count = 1
+    for x in request_list:
+        if line_count == 11:
+            return message + "```"
+        tmp = list(x)
+        title = tmp[0]
+        count = tmp[1]
+        message += f'\n\"{line_count}) {title[:config.TITLE_PADDING].ljust(config.TITLE_PADDING)} \t {count}\"'
+        line_count += 1
+    return message + "```"
+
 
 print('Starting up')
 db = Database(config.DBFILE)
