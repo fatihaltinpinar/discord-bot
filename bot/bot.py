@@ -145,6 +145,23 @@ async def on_member_update(before, after):
             last_match = recent_matches[0]['match_id']
             db.set_last_match(config.OWNER_STEAM_ID, last_match)
 
+
+@client.command()
+async def top10(ctx):
+    message = ctx.message.content
+    target_id = re.search('<@!([0-9].+)>', message)
+    if target_id:
+        print('anan')
+
+    pass
+
+def top10print(request_list, username):
+    message = f"""```nim
+    'TOP 10 TRACKS PLAYED BY {username}\n'"""
+    line_count = 1
+    for x in request_list:
+        message += f"{line_count}) {request_list}"
+
 print('Starting up')
 db = Database(config.DBFILE)
 db.create_tables()
