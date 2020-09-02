@@ -1,6 +1,6 @@
 import os
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-DB_URI = os.getenv("DB_URI")
+DATABASE_URL = os.getenv("DB_URI")
 OPENDOTA_KEY = os.getenv("OPENDOTA_KEY")
 
 
