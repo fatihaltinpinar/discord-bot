@@ -204,6 +204,6 @@ def top10print_byuser(request_list, username):
 
 
 print('Starting up')
-db = Database(config.DB_URI)
+db = Database(config.DATABASE_URL)
 db.create_tables()
 client.run(config.DISCORD_TOKEN)
