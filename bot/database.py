@@ -1,4 +1,4 @@
-import sqlite3
+import psycopg2 as dbapi
 import config
 
 class Database:
@@ -7,45 +7,49 @@ class Database:
         self.db_file = db_file
 
     def create_tables(self):
-        with sqlite3.connect(self.db_file) as conn:
+        with dbapi.connect(self.db_file) as conn:
+            cursor = conn.cursor()
             query = """
             create table if not exists play_requests(
-            id              integer primary key,
+            id              serial primary key,
             video_title     varchar(128),
             video_link      varchar(1024),
-            member_id       int,
-            guild_id        int,
+            member_id       varchar(32),
+            guild_id        varchar(32),
             datetime timestamp not null default current_timestamp);"""
             query2 = """
             create table if not exists last_match(
-            steam_id       integer primary key,
-            match_id        integer             
+            steam_id       varchar(32)  primary key,
+            match_id        varchar(32)             
             );
             """
-            conn.execute(query)
-            conn.execute(query2)
+            cursor.execute(query)
+            cursor.execute(query2)
 
     def add_play_request(self, video_title, video_link, member_id, guild_id):
-        with sqlite3.connect(self.db_file) as conn:
+        with dbapi.connect(self.db_file) as conn:
+            cursor = conn.cursor()
             query = """
-                insert into play_requests(video_title, video_link, member_id, guild_id) values (?, ?, ?, ?)
+                insert into play_requests(video_title, video_link, member_id, guild_id) values (%s, %s, %s, %s)
                     """
-            conn.execute(query, (video_title, video_link, member_id, guild_id))
+            cursor.execute(query, (video_title, video_link, member_id, guild_id))
 
     def get_member_ids(self, guild_id):
         member_ids = []
-        with sqlite3.connect(self.db_file) as conn:
+        with dbapi.connect(self.db_file) as conn:
+            cursor = conn.cursor()
             query = """
-                select member_id from play_requests where guild_id == ? group by member_id
+                select member_id from play_requests where guild_id == %s group by member_id
             """
-            cursor = conn.execute(query, (guild_id,))
+            cursor.execute(query, (guild_id,))
             for row in cursor:
                 member_ids.append(row[0])
         return member_ids
 
     def get_request_list(self, guild_id):
         request_list = []
-        with sqlite3.connect(self.db_file) as conn:
+        with dbapi.connect(self.db_file) as conn:
+            cursor = conn.cursor()
             # query = """
             # select video_title, video_link, count(id)
             # from play_requests
@@ -56,42 +60,45 @@ class Database:
             query = """
             select video_title, video_link, SUM(request_per_member) as total_requests, member_id from
                 (select video_title, video_link, count(*) as request_per_member, member_id from play_requests
-                where guild_id = ?
+                where guild_id = %s
                 group by video_link, member_id
-                order by video_title, count(*) desc)
+                order by video_title, count(*) desc) as foo
             group by video_title
             order by total_requests desc
             """
-            cursor = conn.execute(query, (guild_id,))
+            cursor.execute(query, (guild_id,))
             request_list = cursor.fetchall()
         return request_list
 
     def get_last_match(self, steam_id):
         match_id = 0
-        with sqlite3.connect(self.db_file) as conn:
+        with dbapi.connect(self.db_file) as conn:
+            cursor = conn.cursor()
             query = """
-            select match_id from last_match where steam_id == ?;
+            select match_id from last_match where steam_id == %s;
             """
-            cursor = conn.execute(query, (steam_id,))
+            cursor.execute(query, (steam_id,))
             match_id = cursor.fetchone()
         return match_id[0]
 
     def set_last_match(self, steam_id, match_id):
-        with sqlite3.connect(self.db_file) as conn:
-            query = """update last_match set match_id = ? where steam_id == ?;"""
-            cursor = conn.execute(query, (match_id, steam_id))
+        with dbapi.connect(self.db_file) as conn:
+            cursor = conn.cursor()
+            query = """update last_match set match_id = %s where steam_id == %s;"""
+            cursor.execute(query, (match_id, steam_id))
             if cursor.rowcount == 0:
-                query = """insert into last_match values (?, ?);"""
+                query = """insert into last_match values (%s, %s);"""
                 cursor = conn.execute(query, (steam_id, match_id))
 
 
 
     def get_top10_by_member_id(self, member_id):
         request_list = []
-        with sqlite3.connect(self.db_file) as conn:
+        with dbapi.connect(self.db_file) as conn:
+            cursor = conn.cursor()
             query = """SELECT video_title, count(*) FROM play_requests 
-            where member_id = ? GROUP by video_link ORDER by 2 desc LIMIT 10"""
-            cursor = conn.execute(query, (member_id,))
+            where member_id = %s GROUP by video_link ORDER by 2 desc LIMIT 10"""
+            cursor.execute(query, (str(member_id),))
             request_list = cursor.fetchall()
         return request_list
 

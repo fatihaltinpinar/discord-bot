@@ -84,6 +84,8 @@ async def on_message(message):
 @client.command()
 @commands.is_owner()
 async def list_requests(ctx):
+    # TODO: FIX
+    return
     # member_ids = db.get_member_ids(ctx.guild.id)
     # member_names = {}
     # for id in member_ids:
@@ -148,6 +150,8 @@ async def on_member_update(before, after):
 
 @client.command()
 async def top10(ctx):
+    # TODO: FIX SQL QUERIES
+    return
     message = ctx.message.content
     target_id = re.search('<@!([0-9].+)>', message)
     if target_id:
@@ -200,6 +204,6 @@ def top10print_byuser(request_list, username):
 
 
 print('Starting up')
-db = Database(config.DBFILE)
+db = Database(config.DB_URI)
 db.create_tables()
-client.run(config.TOKEN)
+client.run(config.DISCORD_TOKEN)
