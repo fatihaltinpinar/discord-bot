@@ -96,8 +96,15 @@ class Database:
         request_list = []
         with dbapi.connect(self.db_file) as conn:
             cursor = conn.cursor()
-            query = """SELECT video_title, count(*) FROM play_requests 
-            where member_id = %s GROUP by video_link ORDER by 2 desc LIMIT 10"""
+            query = """
+            select mode() WITHIN GROUP ( ORDER BY video_title ) as video_title, count(*) as count from play_requests
+            where play_requests.member_id = '118406756589109255' 
+            group by play_requests.video_link 
+            order by count desc limit 10
+            """
+
+            # query = """SELECT video_title, count(*) FROM play_requests
+            # where member_id = %s GROUP by video_link ORDER by 2 desc LIMIT 10"""
             cursor.execute(query, (str(member_id),))
             request_list = cursor.fetchall()
         return request_list

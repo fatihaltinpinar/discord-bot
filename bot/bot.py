@@ -175,7 +175,7 @@ async def top10(ctx):
 
 def top10print(request_list):
     message = f"""```nim
-    \t\tTOP 10 TRACKS PLAYED BY IN SERVER\n"""
+    \t\tTOP 10 TRACKS PLAYED BY IN  SERVER\n"""
     line_count = 1
     for x in request_list:
         if line_count == 11:
@@ -198,7 +198,7 @@ def top10print_byuser(request_list, username):
         tmp = list(x)
         title = tmp[0]
         count = tmp[1]
-        message += f'\n\"{line_count}) {title[:config.TITLE_PADDING].ljust(config.TITLE_PADDING)} \t {count}\"'
+        message += f'\n\"{line_count}) {title[:config.TITLE_PADDING].ljust(config.TITLE_PADDING)}\t{count}\"'
         line_count += 1
     return message + "```"
 
