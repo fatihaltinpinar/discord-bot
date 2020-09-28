@@ -56,6 +56,7 @@ class Database:
                    count(*) as count,
                    mode() within group ( order by member_id) as member_id 
             from play_requests
+            where guild_id = %s
             group by video_link
             order by count desc;"""
             cursor.execute(query, (guild_id,))
@@ -72,6 +73,7 @@ class Database:
                    count(*) as count,
                    mode() within group ( order by member_id) as member_id 
             from play_requests
+            where guild_id = %s
             group by video_link
             order by count desc
             limit 10;"""
@@ -107,7 +109,7 @@ class Database:
             cursor = conn.cursor()
             query = """
             select mode() WITHIN GROUP ( ORDER BY video_title ) as video_title, count(*) as count from play_requests
-            where play_requests.member_id = '118406756589109255' 
+            where play_requests.member_id = %s 
             group by play_requests.video_link 
             order by count desc limit 10;
             """
