@@ -59,7 +59,7 @@ class Database:
             where guild_id = %s
             group by video_link
             order by count desc;"""
-            cursor.execute(query, (guild_id,))
+            cursor.execute(query, (str(guild_id),))
             request_list = cursor.fetchall()
         return request_list
 
@@ -77,7 +77,7 @@ class Database:
             group by video_link
             order by count desc
             limit 10;"""
-            cursor.execute(query, (guild_id,))
+            cursor.execute(query, (str(guild_id),))
             request_list = cursor.fetchall()
         return request_list
 
