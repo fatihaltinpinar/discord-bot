@@ -12,7 +12,7 @@ Ben <@118406756589109255>'nin kolesiyim, sunucunuzda otururum, bos yaparim
 WIN_MESSAGE = ["Türk Dotası Kazandı", "Midden YARdık", "Win", "+20 +20 +20", "Zafer"]
 LOSS_MESSAGE = ["Türk Dotası Hüsran", "Kaybeden Tayfa", "Olmadı :(", "-20, -20 -20", "Mağlubiyet"]
 
-TITLE_PADDING = 50
+TITLE_PADDING = 45
 
 WIN_DESCRIPTIONS = ["Ne oynadım be",
                     "Midi ezdim",

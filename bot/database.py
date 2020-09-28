@@ -50,22 +50,31 @@ class Database:
         request_list = []
         with dbapi.connect(self.db_file) as conn:
             cursor = conn.cursor()
-            # query = """
-            # select video_title, video_link, count(id)
-            # from play_requests
-            # where guild_id == ?
-            # group by video_link
-            # order by 3 desc;
-            # """
             query = """
-            select video_title, video_link, SUM(request_per_member) as total_requests, member_id from
-                (select video_title, video_link, count(*) as request_per_member, member_id from play_requests
-                where guild_id = %s
-                group by video_link, member_id
-                order by video_title, count(*) desc) as foo
-            group by video_title
-            order by total_requests desc
-            """
+            select mode() within group ( order by video_title) as video_title,
+                   video_link, 
+                   count(*) as count,
+                   mode() within group ( order by member_id) as member_id 
+            from play_requests
+            group by video_link
+            order by count desc;"""
+            cursor.execute(query, (guild_id,))
+            request_list = cursor.fetchall()
+        return request_list
+
+    def get_top10(self, guild_id):
+        request_list = []
+        with dbapi.connect(self.db_file) as conn:
+            cursor = conn.cursor()
+            query = """
+            select mode() within group ( order by video_title) as video_title,
+                   video_link, 
+                   count(*) as count,
+                   mode() within group ( order by member_id) as member_id 
+            from play_requests
+            group by video_link
+            order by count desc
+            limit 10;"""
             cursor.execute(query, (guild_id,))
             request_list = cursor.fetchall()
         return request_list
@@ -100,7 +109,7 @@ class Database:
             select mode() WITHIN GROUP ( ORDER BY video_title ) as video_title, count(*) as count from play_requests
             where play_requests.member_id = '118406756589109255' 
             group by play_requests.video_link 
-            order by count desc limit 10
+            order by count desc limit 10;
             """
 
             # query = """SELECT video_title, count(*) FROM play_requests

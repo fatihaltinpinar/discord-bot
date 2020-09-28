@@ -57,6 +57,8 @@ async def leave(ctx):
 
 @client.command()
 async def play(ctx, url):
+    # todo: fix
+    return
     await join(ctx)
     voice_client = get(client.voice_clients, guild=ctx.guild)
     with open("sound.mp3", 'wb') as sound:
@@ -84,8 +86,6 @@ async def on_message(message):
 @client.command()
 @commands.is_owner()
 async def list_requests(ctx):
-    # TODO: FIX
-    return
     # member_ids = db.get_member_ids(ctx.guild.id)
     # member_names = {}
     # for id in member_ids:
@@ -97,7 +97,7 @@ async def list_requests(ctx):
         writer.writerow(("Video Title", "Video URL","Play Count","Played Mostlys By"))
         for request in request_list:
             tmp = list(request)
-            user = client.get_user(tmp[3])
+            user = client.get_user(int(tmp[3]))
             tmp[3] = user.name
             writer.writerow(tmp)
 
@@ -150,8 +150,6 @@ async def on_member_update(before, after):
 
 @client.command()
 async def top10(ctx):
-    # TODO: FIX SQL QUERIES
-    return
     message = ctx.message.content
     target_id = re.search('<@!([0-9].+)>', message)
     if target_id:
@@ -164,7 +162,7 @@ async def top10(ctx):
         message = top10print_byuser(request_list, username)
         await ctx.send(message)
     else:
-        request_list = db.get_request_list(ctx.guild.id)
+        request_list = db.get_top10(ctx.guild.id)
         if len(request_list) == 0:
             await ctx.send("This server have not played any songs yet WOAW!")
             return
@@ -175,7 +173,7 @@ async def top10(ctx):
 
 def top10print(request_list):
     message = f"""```nim
-    \t\tTOP 10 TRACKS PLAYED BY IN  SERVER\n"""
+    \t\tTOP 10 TRACKS PLAYED IN THIS SERVER\n"""
     line_count = 1
     for x in request_list:
         if line_count == 11:
@@ -183,8 +181,8 @@ def top10print(request_list):
         tmp = list(x)
         title = tmp[0]
         count = tmp[2]
-        username = client.get_user(tmp[3]).name
-        message += f'\n\"{line_count}) {title[:config.TITLE_PADDING].ljust(config.TITLE_PADDING)} \t {count} \t {username}\"'
+        username = client.get_user(int(tmp[3])).name
+        message += f'\n\"{line_count}) {title[:config.TITLE_PADDING].ljust(config.TITLE_PADDING)}\t{count}\t{username}\"'
         line_count += 1
     return message + "```"
 
