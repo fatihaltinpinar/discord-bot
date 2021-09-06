@@ -99,7 +99,7 @@ async def list_requests(ctx):
         writer.writerow(("Video Title", "Video URL","Play Count","Played Mostlys By"))
         for request in request_list:
             tmp = list(request)
-            user = client.get_user(int(tmp[3]))
+            user = await client.fetch_user(int(tmp[3]))
             tmp[3] = user.name
             writer.writerow(tmp)
 
@@ -156,7 +156,7 @@ async def top10(ctx):
     target_id = re.search('<@!([0-9].+)>', message)
     if target_id:
         user_id = int(target_id.group(1))
-        username = client.get_user(user_id).name
+        username = (await client.fetch_user(user_id)).name
         request_list = db.get_top10_by_member_id(user_id)
         if len(request_list) == 0:
             await ctx.send(f"{username} did not played any songs yet")
@@ -183,7 +183,7 @@ def top10print(request_list):
         tmp = list(x)
         title = tmp[0]
         count = tmp[2]
-        username = client.get_user(int(tmp[3])).name
+        username = (await client.fetch_user(int(tmp[3]))).name
         message += f'\n\"{line_count}) {title[:config.TITLE_PADDING].ljust(config.TITLE_PADDING)}\t{count}\t{username}\"'
         line_count += 1
     return message + "```"
