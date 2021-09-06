@@ -72,12 +72,14 @@ async def play(ctx, url):
 @client.event
 async def on_message(message):
     # Groovy id
-    if (message.author.id == config.MUSIC_BOT_ID and message.embeds[0].title == "Now playing"):
+    if (message.author.id == config.MUSIC_BOT_ID and
+            len(message.embeds) > 0 and
+            message.embeds[0].description.startswith("Now playing")):
         description = message.embeds[0].description
         print("Adding: ", description)
         video_title = re.search("\[(.*?)\]", description).group(1)
         video_link = re.search("\((http[s]?://(.*?))\)", description).group(1)
-        member_id = re.search("\[<@(.*)>\]", description).group(1)
+        member_id = re.search("<@(.*)>", description).group(1)
         guild_id = message.guild.id
         db.add_play_request(video_title, video_link, member_id, guild_id)
     await client.process_commands(message)
